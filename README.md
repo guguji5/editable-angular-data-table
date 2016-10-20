@@ -1,0 +1,1 @@
+this is a demo of angular data table,besides it could gracefully add or remove branch
