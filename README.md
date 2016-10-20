@@ -3,7 +3,7 @@ Absolutely this is a stronger tree table demo of [angular data table(it's just t
 besides it could gracefully add or remove branch,I improve the function to add and to remove,it is 
 clear as you see in the demo.
 
-![looking](dataTable.jpg "looking")
+![looking](dataTable.png "looking")
 ###require##
 * angular.js
 * dataTable.js
