@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>datatable</title>
+	<script src='angular.js'></script>
+	<script src='//cdn.bootcss.com/angular.js/1.4.0/angular.js'></script>
+	<script src='dataTable.js'></script>
+	<link rel="stylesheet" href="dataTable.css">
+	<link rel="stylesheet" href="material.css">
+	<link rel="stylesheet" href="http://fontastic.s3.amazonaws.com/Jnf54BZCm7mSjGCxNRbfp3/icons.css">
+	<style>
+		.layleft{width:70%;float:left}
+		.layright{width:30%;float:left;padding-top:24px;}
+		.rightSpace{margin-right:30px;}
+	</style>
+</head>
+<body>
+     <div ng-app="app">
+		<div ng-controller="MyController">
+			<div class='layleft'>
+				<dtable options="options" rows="data" on-row-click="onRowClick(row)" class="material" expanded="expanded" on-tree-toggle="treeToggled(cell)"></dtable>
+			</div>
+			
+			<div class='layright'>
+				<p>
+					<button ng-click="addChild()" class='rightSpace'>add child</button><button ng-click="addSiblings()" class='rightSpace'>add siblings</button><button ng-click="remove()">remove it</button>
+				</p>
+				<p>
+					compony:<input ng-model='DATa.company' style='margin-right:30px;'/>
+				</p>
+				<p>
+					revenue:<input ng-model='DATa.revenue' style='margin-right:30px;'/>
+				</p>
+				<p style='padding-left:30px;'>
+					sales:<input ng-model='DATa.sales'/>
+				</p>
+			</div>
+		</div>
+	</div>
+<script>
+	var module = angular.module('app', ['data-table']);
+	module.controller('MyController', function($scope, $http,$timeout) {
+	  //这是用来接收新数据的对象
+	  $scope.DATa={
+		'company': '',
+		'revenue': '',
+		'sales': '',
+		parentCompany:''
+	  };
+	  $scope.removeNum=0;
+	  $scope.options = {
+		rowHeight: 50,
+		footerHeight: false,
+		scrollbarV: true,
+		headerHeight: 50,
+		columnMode: 'flex',
+		selectable: true,
+		columns: [{
+		  name: "Company",
+		  prop: "company",
+		  flexGrow: 2,
+		  isTreeColumn: true,
+		  relationProp: 'parentCompany'
+		}, {
+		  name: "Revenue",
+		  flexGrow: 1,
+		  prop: "revenue"
+		}, {
+		  name: "Sales",
+		  flexGrow: 1,
+		  prop: "sales"
+		}]
+	  };
+	  
+	  $scope.expanded = {
+		'Acme': false,
+		'Apple':false,
+		'Apple IBS':true
+	  };//原来可以用这个控制这个是不是折叠，只要想打开那个赋值就好，太nice了
+	  
+	  $scope.treeToggled = function(row, cell) {
+		//console.log(row);
+	  };
+	  //假设这里是后台返回回来的数据
+	  $scope.data = [{
+		'company': 'Acme',
+		'revenue': '$3,452,342',
+		'sales': '$3,452,342,353'
+	  }, {
+		'company': 'Acme Holdings',
+		'revenue': '$345,342',
+		'sales': '$4,452,222,353',
+		parentCompany: 'Acme'
+	  }, {
+		'company': 'Acme Limited',
+		'revenue': '$344,442',
+		'sales': '$10,452,444,353',
+		parentCompany: 'Acme'
+	  }, {
+		'company': 'Sterling',
+		'revenue': '$40,443,111',
+		'sales': '$50,433,777,564'
+	  }, {
+		'id':5,
+		'company': 'Apple',
+		'revenue': '$1,440,443,111',
+		'sales': '$999,509,433,777,564'
+	  }, {
+		'company': 'Apple IBS',
+		'revenue': '$1,440,443,111',
+		'sales': '$999,509,433,777,564',
+		parentCompany: 'Apple'
+	  }, {
+		'company': 'Apple IBS South2',
+		'revenue': '$1,440,443,111',
+		'sales': '$999,509,433,777,564',
+		parentCompany: 'Apple IBS'
+	  },{
+		'company': 'Apple IBS South3',
+		'revenue': '$1,440,443,111',
+		'sales': '$999,509,433,777,564',
+		parentCompany: 'Acme'
+	  },{
+		'company': 'SHIJIAZHUANG',
+		'revenue': '$1,440,443,111',
+		'sales': '$999,509,433,777,564',
+		parentCompany: 'Acme Limited'
+	  }];
+	  //因为删除用到id，所以给每个值付个id
+	  angular.forEach($scope.data,function(value,key){
+		 value.id=key;
+	  })
+	  //新增加的id逐个递增
+	  var IdNum=$scope.data.length;
+	  var temp=null;//用于接收新的对象
+	 $scope.addChild=function(){
+		if(temp){
+			$scope.expanded[temp.company]=true;//增加子节点的时候，将其展开
+			$scope.DATa.parentCompany=temp.company;
+			$scope.DATa.id=IdNum;
+			$scope.data.push(angular.copy($scope.DATa));
+			IdNum++;
+		}else{
+			alert('请选择在谁项下增加子项');
+		}
+		
+	};
+	$scope.addSiblings=function(){
+		if(temp){
+			$scope.DATa.id=IdNum;
+			$scope.DATa.parentCompany=temp.parentCompany;
+			$scope.data.push(angular.copy($scope.DATa));
+			IdNum++;
+		}else{
+			alert('请先选择增加谁的同级项');
+		}
+	};
+	$scope.onRowClick = function(row) {
+		//console.log(row);
+		temp=row;
+		$scope.removeNum=row.id;
+	  };
+	$scope.remove = function(){
+		$scope.removeItem($scope.removeNum);
+	};
+	$scope.formNametoId=function(name){
+		var id;
+		angular.forEach($scope.data,function(value,key){
+			if(value.company==name){
+				id=value.id;
+			}
+		})
+		return id;
+	 }
+	 
+	 //remove方法  删除的时候，如果它有children，
+	 //就得先把children里边也删了and 把它本身也删了
+	 $scope.removeItem=function(id){
+		angular.forEach($scope.data,function(value,key){
+			if(value.id==id){
+				if(!value.$$children){
+					$scope.data.splice(key,1)
+				}else{
+					angular.forEach(value.$$children,function(v,k){
+						$scope.removeItem($scope.formNametoId(v));
+					});
+					$scope.data.splice(key,1)
+				}
+				
+			}
+		})
+	 };
+
+});
+</script>
+</body>
+</html>
