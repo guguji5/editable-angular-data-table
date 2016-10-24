@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Angular Tree Drag &amp; Drop</title>
+    <script src="angular.1.3.15.js"></script>
+    <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css">
+    <script src="angular-bootstrap-grid-tree/src/tree-grid-directive.js"></script>
+    <link rel="stylesheet" href="angular-bootstrap-grid-tree/src/treeGrid.css">   
+</head>
+<body ng-controller='modeCtrl'>
+    <div class="container-fluid">
+        <div class="row">
+            <div class='col-md-4'>
+                <form role="form">
+                  <div class="form-group">
+                    <label>name:</label>
+                    <input type="text" class="form-control" ng-model='newData.Name'>
+                  </div>
+                  <div class="form-group">
+                    <label>area:</label>
+                    <input type="text" class="form-control" ng-model='newData.Area'>
+                  </div>
+                  <div class="form-group">
+                    <label>population:</label>
+                    <input type="text" class="form-control" ng-model='newData.Population'>
+                  </div>
+                  <div class="form-group">
+                    <label>timezone:</label>
+                    <input type="text" class="form-control" ng-model='newData.TimeZone'>
+                  </div>
+                  
+                   <button type="button" class="btn btn-primary" ng-click='addChild()'>add children</button>
+                   <button type="button" class="btn btn-success" ng-click='addSiblings()'>add Siblings</button>
+                   <button type="button" class="btn btn-danger" ng-click='remove()'>remove</button>
+                 
+                </form>
+
+            </div>        
+            <div class='col-md-8'>
+                <tree-grid tree-data="tree_data" 
+                    on-select = "Select(branch)"
+                    on-click = "Click(branch)"
+                    ></tree-grid>
+            </div>        
+        </div>
+    </div>
+    
+    
+    <script type="text/javascript">
+        angular.module('myApp', ['treeGrid'])
+        .controller('modeCtrl',function($scope){
+            $scope.newData={
+                Name:"",Area:'',Population:'',TimeZone:""
+            }
+            var Clicked=null;
+            var temp={branch:null,parentBranch:null,index:0};
+
+            $scope.addChild=function(){
+                $scope.getTheBranch($scope.tree_data);
+                temp.branch.children.push(angular.copy($scope.newData))
+                temp.branch.expanded=true;
+                $scope.resetData();
+                //Clicked=null;temp=null;
+            };
+            $scope.addSiblings=function(){
+                $scope.getTheBranch($scope.tree_data);
+                temp.parentBranch.push(angular.copy($scope.newData));
+                $scope.resetData();
+            };
+            $scope.remove=function(){
+                $scope.getTheBranch($scope.tree_data);
+                console.log(temp);
+                temp.parentBranch.splice(temp.index,1)
+            }
+            $scope.Select = function(branch){
+                console.log('select', branch);
+                Clicked=branch;
+                $scope.getTheBranch($scope.tree_data);
+            };
+            $scope.Click = function(branch){
+                console.log('clicked', branch)
+                //Clicked=branch;
+                //$scope.getTheBranch($scope.tree_data);
+            }
+            $scope.tree_data = [
+                 {Name:"USA",Area:9826675,Population:318212000,TimeZone:"UTC -5 to -10",
+                  children:[
+                    {Name:"California", Area:423970,Population:38340000,TimeZone:"Pacific Time",
+                        children:[
+                            {Name:"San Francisco", Area:231,Population:837442,TimeZone:"PST"},
+                            {Name:"Los Angeles", Area:503,Population:3904657,TimeZone:"PST"}
+                        ]
+                    },
+                    {Name:"Illinois", Area:57914,Population:12882135,TimeZone:"Central Time Zone",
+                        children:[
+                            {Name:"Chicago", Area:234,Population:2695598,TimeZone:"CST"}
+                        ]
+                    }
+                ]
+              },    
+              {Name:"Texas",Area:268581,Population:26448193,TimeZone:"Mountain"},
+              {Name:"Canada",Area:238581,Population:223453,TimeZone:"East Eight",
+                children:[
+                       {Name:"Ottawa", Area:23224,Population:298,TimeZone:"CST"}
+                   ]
+                }
+              ];
+
+          $scope.getTheBranch=function(DATA){
+                for(var i=0;i<DATA.length;i++){
+                    if(DATA[i].uid==Clicked.uid){
+                        temp.branch=DATA[i];
+                        temp.index=i;
+                        temp.parentBranch=DATA;
+                    }else if(DATA[i].children.length>0){
+                        $scope.getTheBranch(DATA[i].children);
+                    }
+                }
+          };
+           $scope.resetData=function(){
+             $scope.newData.Name='';
+             $scope.newData.Area='';
+             $scope.newData.Type='';
+             $scope.newData.Description ='';
+            }
+        });
+    </script>
+</body>
+</html>
